@@ -1,3 +1,5 @@
+## ДЗ.3 Файловые системы и LVM
+
 ### Создаём временный том для раздела / :
 >pvcreate /dev/sdb
 >vgcreate vg_root /dev/sdb
