@@ -10,16 +10,16 @@
 ### Копируем все данные с / раздела в /mnt:
 >xfsdump -J - /dev/VolGroup00/LogVol00 | xfsrestore -J - /mnt
 
-### Перенастроим grub для загрузки с нового раздела /:
+### Перенастраиваем grub для загрузки с нового раздела /:
 
 >for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
 >chroot /mnt/
 >grub2-mkconfig -o /boot/grub2/grub.cfg
 
-### Обновим образ initrd
+### Обновляем образ initrd
 >cd /boot ; for i in `ls initramfs-*img`; do dracut -v $i `echo $i|sed "s/initramfs-//g; s/.img//g"` --force; done
 
-### Внесём правки /boot/grub2/grub.cfg заменив rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_root
+### Вносим правки /boot/grub2/grub.cfg заменив rd.lvm.lv=VolGroup00/LogVol00 на rd.lvm.lv=vg_root/lv_root
 
 ### Перезагружаемся, запись вышеописанных действий утилитой script  в файле typescript_stage01
 
@@ -34,7 +34,7 @@
 ### Копируем все данные с временного раздела / в /mnt:
 >xfsdump -J - /dev/vg_root/lv_root | xfsrestore -J - /mnt
 
-### Перенастроим grub для загрузки с уменьшенного раздела / исключая правку /etc/grub2/grub.cfg
+### Перенастраиваем grub для загрузки с уменьшенного раздела / исключая правку /etc/grub2/grub.cfg
 >for i in /proc/ /sys/ /dev/ /run/ /boot/; do mount --bind $i /mnt/$i; done
 >chroot /mnt/
 >grub2-mkconfig -o /boot/grub2/grub.cfg
@@ -46,11 +46,11 @@ pvcreate /dev/sdc /dev/sdd
 vgcreate vg_var /dev/sdc /dev/sdd
 lvcreate -L 950M -m1 -n lv_var vg_var
 
-### Создаем этом разделе файловую систему ext4 и перемещаем туда данные /var:
+### Создаём этом разделе файловую систему ext4 и перемещаем туда данные /var:
 >mkfs.ext4 /dev/vg_var/lv_var
 >mount /dev/vg_var/lv_var /mnt
 >cp -aR /var/* /mnt/
-### СОхраняем содержимое старого /var:
+### Сохраняем содержимое старого /var:
 >mkdir /tmp/oldvar && mv /var/* /tmp/oldvar
 ### Монтируем var на созданом раделе в каталог /var:
 >umount /mnt
@@ -79,17 +79,18 @@ lvcreate -L 950M -m1 -n lv_var vg_var
 ### Вносим правки в fstsb для автомонтирования home на новом разделе при загрузке:
 >echo "`blkid | grep Home | awk '{print $2}'` /home xfs defaults 0 0" >> /etc/fstab/
 
-### Создание снапшота и восстановление данных из него
+### Создаём снапшот,удаляем часть файлов и восстановливаем удалённое из снепшота:
 
 #### Сгенерируем 20 файлов /home/:
 >touch /home/file{1..20}
-#### Снимем снапшот:
+#### Делаем снапшот:
 >lvcreate -L 100MB -s -n home_snap /dev/VolGroup00/LogVol_Home
 
-#### Удаляем файл:
+#### Удаляем файлы:
 >rm -f /home/file{11..20}
 
 #### Восстанавливаем удалённое из снапшота:
 >umount /home
 >lvconvert --merge /dev/VolGroup00/home_snap
 >mount /home
+### Запись вышеописанных действий утилитой script  в файле typescript_stage03
