@@ -44,9 +44,9 @@
 
 ### Не выходя из chroot создаём раздел под /var:
 
-pvcreate /dev/sdc /dev/sdd
-vgcreate vg_var /dev/sdc /dev/sdd
-lvcreate -L 950M -m1 -n lv_var vg_var
+>pvcreate /dev/sdc /dev/sdd
+>vgcreate vg_var /dev/sdc /dev/sdd
+>vcreate -L 950M -m1 -n lv_var vg_var
 
 ### Создаём этом разделе файловую систему ext4 и перемещаем туда данные /var:
 >mkfs.ext4 /dev/vg_var/lv_var
